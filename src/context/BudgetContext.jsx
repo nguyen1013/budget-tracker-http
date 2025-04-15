@@ -21,7 +21,7 @@ function BudgetReducer(state, action) {
           (transaction) => transaction.id !== action.payload
         ),
       };
-    case "SET_TRANSACTIONS":
+    case "SET_TRANSACTIONS": // for fetching database from server and update to transactions state
       return {
         ...state,
         transactions: action.payload, // Replace transactions completely
@@ -56,10 +56,11 @@ export default function BudgetProvider({ children }) {
     fetchTransactions();
   }, []);
   
+  // update functions to be asynchronous function
   async function addTransaction(transaction) {
     try {
       const data = await addTransactionToServer(transaction);       
-      dispatch({ type: "ADD_TRANSACTION", payload: {...transaction, id: data.id} });
+      dispatch({ type: "ADD_TRANSACTION", payload: {...transaction, id: data.id} }); // update id from server for the new transaction
     } catch (error) {
       setError({ message: "Failed to add transaction to server." });
       console.error("Error adding transaction:", error);
