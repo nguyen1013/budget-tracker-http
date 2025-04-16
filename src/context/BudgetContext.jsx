@@ -34,6 +34,8 @@ function BudgetReducer(state, action) {
 
 export default function BudgetProvider({ children }) {
   const [state, dispatch] = useReducer(BudgetReducer, initialState);
+  const [loading, setLoading] = useState(true); // for initial data fetch
+  const [addingTransaction, setAddingTransaction] = useState(false); // for form button
 
   useEffect(() => {
     async function fetchTransactions() {
@@ -41,39 +43,50 @@ export default function BudgetProvider({ children }) {
         const transactions = await getTransaction();
         dispatch({ type: "SET_TRANSACTIONS", payload: transactions });
       } catch (error) {
-        setError({ message: "Failed to fetch transactions" });
-      } 
+        console.error("Failed to fetch transactions:", error);
+      } finally {
+        setLoading(false);
+      }
     }
-  
+
     fetchTransactions();
   }, []);
-  
-  // update functions to be asynchronous function
+
   async function addTransaction(transaction) {
+    setAddingTransaction(true);
+
+    // Optimistically add to UI with temporary ID
+    const tempId = Date.now();
+    const tempTransaction = { ...transaction, id: tempId };
+    dispatch({ type: "ADD_TRANSACTION", payload: tempTransaction });
+
     try {
-      const data = await addTransactionToServer(transaction);       
-      dispatch({ type: "ADD_TRANSACTION", payload: {...transaction, id: data.id} }); // update id from server for the new transaction
+      const data = await addTransactionToServer(transaction);
+      // Replace temporary ID with server-assigned ID
+      dispatch({ type: "DELETE_TRANSACTION", payload: tempId });
+      dispatch({ type: "ADD_TRANSACTION", payload: { ...transaction, id: data.id } });
     } catch (error) {
-      setError({ message: "Failed to add transaction to server." });
       console.error("Error adding transaction:", error);
+      // Revert the optimistic update
+      dispatch({ type: "DELETE_TRANSACTION", payload: tempId });
+    } finally {
+      setAddingTransaction(false);
     }
   }
 
   async function deleteTransaction(transactionId) {
     try {
-      const data = await deleteTransactionFromServer(transactionId)
+      await deleteTransactionFromServer(transactionId);
       dispatch({ type: "DELETE_TRANSACTION", payload: transactionId });
-    } catch(error) {
-      setError({ message: "Failed to delete transaction from server." });
-      console.error("Error deleting transaction:", error);      
-    }    
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+    }
   }
 
   const saldo = state.transactions.reduce(
     (prev, transaction) => prev + Number(transaction.amount),
     0
   );
-
 
   return (
     <BudgetContext.Provider
@@ -82,6 +95,8 @@ export default function BudgetProvider({ children }) {
         saldo,
         addTransaction,
         deleteTransaction,
+        loading,
+        addingTransaction,
       }}
     >
       {children}
