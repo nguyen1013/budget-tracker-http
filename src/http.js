@@ -1,42 +1,52 @@
-export async function getTransaction () {
-  const response = await fetch("https://www.cc.puv.fi/~e2301514/budget-tracker/BudgetTrackerAPI.php")
-  const resData = await response.json()
+export async function getTransaction() {
+  try {
+    const response = await fetch("https://www.cc.puv.fi/~e2301514/budget-tracker/BudgetTrackerAPI.php");
+    const resData = await response.json();
 
+    if (!response.ok) throw new Error("Failed to fetch database");
 
-  if (!response.ok) throw new Error("Failed to fetch database")
-  
-  return resData  
-
+    return resData;
+  } catch (error) {
+    console.error("Error fetching transactions:", error.message);
+  }
 }
 
 export async function addTransactionToServer(transaction) {
-  const response = await fetch("https://www.cc.puv.fi/~e2301514/budget-tracker/BudgetTrackerAPI.php", {
-    method: "POST",
-    body: JSON.stringify(transaction),
-    headers: {
-      "Content-Type": "application/json"
-    }
-   })
-   
-  const resData = await response.json()
+  try {
+    const response = await fetch("https://www.cc.puv.fi/~e2301514/budget-tracker/BudgetTrackerAPI.php", {
+      method: "POST",
+      body: JSON.stringify(transaction),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
 
-  if (!response.ok) throw new Error("Failed to upload transaction")
+    const resData = await response.json();
 
-  return resData
+    if (!response.ok) throw new Error("Failed to upload transaction");
+
+    return resData;
+  } catch (error) {
+    console.error("Error uploading transaction:", error.message);
+  }
 }
 
 export async function deleteTransactionFromServer(id) {
-  const response = await fetch("https://www.cc.puv.fi/~e2301514/budget-tracker/BudgetTrackerAPI.php", {
-    method: "DELETE",
-    body: JSON.stringify({id}),
-    headers: {
-      "Content-Type": "application/json"
-    }
-   })
-   
-  const resData = await response.json()
+  try {
+    const response = await fetch("https://www.cc.puv.fi/~e2301514/budget-tracker/BudgetTrackerAPI.php", {
+      method: "DELETE",
+      body: JSON.stringify({ id }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
 
-  if (!response.ok) throw new Error("Failed to delete transaction")
+    const resData = await response.json();
 
-  return resData
+    if (!response.ok) throw new Error("Failed to delete transaction");
+
+    return resData;
+  } catch (error) {
+    console.error("Error deleting transaction:", error.message);
+  }
 }
