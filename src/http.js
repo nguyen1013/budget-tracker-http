@@ -8,6 +8,7 @@ export async function getTransaction() {
     return resData;
   } catch (error) {
     console.error("Error fetching transactions:", error.message);
+    return []
   }
 }
 

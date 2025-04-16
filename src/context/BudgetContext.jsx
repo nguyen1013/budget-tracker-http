@@ -35,21 +35,14 @@ function BudgetReducer(state, action) {
 export default function BudgetProvider({ children }) {
   const [state, dispatch] = useReducer(BudgetReducer, initialState);
 
-  // const [isFetching, setIsFetching] = useState(false)
-  // const [error, setError] = useState(null)
-
-  //console.log(state.transactions);
-
   useEffect(() => {
     async function fetchTransactions() {
-      // setIsFetching(true);
       try {
         const transactions = await getTransaction();
         dispatch({ type: "SET_TRANSACTIONS", payload: transactions });
       } catch (error) {
         setError({ message: "Failed to fetch transactions" });
       } 
-      // setIsFetching(false);
     }
   
     fetchTransactions();
