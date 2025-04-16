@@ -1,8 +1,11 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { BudgetContext } from "../context/BudgetContext";
+import Modal from "./Modal";
+import Error from "./Error";
 
 export default function TransactionForm() {
   const { addTransaction } = useContext(BudgetContext);
+  const [invalidInput, setInvalidInput] = useState(false)
 
   function handleAdd(event) {
     event.preventDefault();
@@ -13,7 +16,7 @@ export default function TransactionForm() {
     const newDate = new Date().toISOString().slice(0, 10);// create a new Date() due to format of backend file
 
     if (!amount || !description) {
-      alert("Invalid fields");
+      setInvalidInput(true)
       return;
     }
 
@@ -27,26 +30,42 @@ export default function TransactionForm() {
         category: category,
       };
       addTransaction(transaction);
+      event.target.reset();
     }
   }
 
+  function handleError() {
+    setInvalidInput(false)
+  }
+
   return (
-    <form onSubmit={handleAdd}>
-      <label htmlFor="description">Description</label>
-      <input id="description" name="description"></input>
+    <>
+      <Modal open={invalidInput} onClose={handleError}>
+        {invalidInput && (
+          <Error
+            title="An error occurred"
+            message="Invalid input value"
+            onConfirm={handleError}
+          />
+        )}
+      </Modal>
+      <form onSubmit={handleAdd}>
+        <label htmlFor="description">Description</label>
+        <input id="description" name="description"></input>
 
-      <label htmlFor="amount">Amount</label>
-      <input id="amount" name="amount"></input>
+        <label htmlFor="amount">Amount</label>
+        <input id="amount" name="amount"></input>
 
-      <label htmlFor="category">Category</label>
-      <select id="category" name="category">
-        <option value="salary">Salary</option>
-        <option value="gasoline">Gasoline</option>
-        <option value="food">Food</option>
-        <option value="magazines">Magazines</option>
-      </select>
+        <label htmlFor="category">Category</label>
+        <select id="category" name="category">
+          <option value="salary">Salary</option>
+          <option value="gasoline">Gasoline</option>
+          <option value="food">Food</option>
+          <option value="magazines">Magazines</option>
+        </select>
 
-      <button type="submit">Add Transaction</button>
-    </form>
+        <button type="submit">Add Transaction</button>
+      </form>
+    </>
   );
 }
