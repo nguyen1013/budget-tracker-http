@@ -77,7 +77,7 @@ export default function BudgetProvider({ children }) {
   }
 
   const saldo = state.transactions.reduce(
-    (prev, transaction) => prev + transaction.amount,
+    (prev, transaction) => prev + Number(transaction.amount),
     0
   );
 
